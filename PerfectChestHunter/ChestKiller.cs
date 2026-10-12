@@ -10,12 +10,9 @@ public class ChestKiller : MonoBehaviour
 {
     public static ChestKiller Instance;
 
-    private Achievement killMimic;
     private ChestHuntManager _chestHuntManager;
-    private PlayerInventory _playerInventory;
     private bool _chestOpenerRunning;
     private bool DebugMode;
-    private bool killMimicCompleted;
     private bool MultiplyArmoryChests;
     private bool PerfectChestHuntOn;
 
@@ -27,11 +24,9 @@ public class ChestKiller : MonoBehaviour
     {
         Instance = this;    
         _chestHuntManager = gameObject.GetComponentInChildren<ChestHuntManager>();
-        _playerInventory = PlayerInventory.instance;
 
         MultiplyArmoryChests = Plugin.Settings.MultiplyArmoryChests.Value;
         PerfectChestHuntOn = Plugin.Settings.PerfectChestsHuntOn.Value;
-        InitialiseAchievements();
     }
 
     private void Start() {
@@ -41,18 +36,6 @@ public class ChestKiller : MonoBehaviour
                 PerfectChestHuntOn = Plugin.Settings.PerfectChestsHuntOn.Value;
                 Plugin.Settings.PerfectChestsHuntOn.SaveEntry();
             });
-    }
-
-    private void InitialiseAchievements() 
-    {
-        foreach (Achievement achievement in _playerInventory.achievements)
-        {
-            if (achievement.name == "achievement_that_was_fun")
-            {
-                killMimic = achievement;
-                killMimicCompleted = killMimic.unlocked;
-            }
-        }
     }
 
     private void LateUpdate()
@@ -78,7 +61,6 @@ public class ChestKiller : MonoBehaviour
         if (!GameState.IsChestHunt())
         {
             _chestOpenerRunning = false;
-            killMimicCompleted = killMimic.unlocked;
         }
         else if (PerfectChestHuntOn)
         {
@@ -108,10 +90,7 @@ public class ChestKiller : MonoBehaviour
     {
         yield return WaitForChestHuntInitialise();
 
-        if (!killMimicCompleted)
-            yield return (OpenMimicChest());
-        else
-            yield return (OpenNormalChestsPerfectly());
+        yield return OpenNormalChestsPerfectly();
 
         yield return WaitForPerfectChestsReady();
         OpenOnePerfectChest();
